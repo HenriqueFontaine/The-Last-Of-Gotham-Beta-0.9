@@ -17,7 +17,7 @@
 #define ALTURA 480
 #define FPS 30
 #define TIRO 10
-#define PLAYERSGO 1
+#define PLAYERSGO 3
 
 // CORES
 #define BLACK al_map_rgb(0, 0, 0)

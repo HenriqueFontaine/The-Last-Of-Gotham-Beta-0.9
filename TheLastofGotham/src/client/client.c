@@ -196,7 +196,6 @@ void printLoginScreen(char str[])
     al_set_audio_stream_playing(credito, false);
     al_set_audio_stream_playing(select_char, false);
 
-
   int op = 0;
   while (1) {
     ALLEGRO_EVENT event;
@@ -349,7 +348,7 @@ void waiting_room() {
       FPSLimit();
     }
     assertConnection(ServerIP, loginMsg);
-    char_select();
+    char_select(0);
   }
 }
 
@@ -358,10 +357,12 @@ void waiting_room() {
 
 #define OP_CHAR 9
   #define TIME_AUX 12
-  void char_select() {
+  void char_select(int msg) {
   int op = 0;
   int i;
   int time = 0;
+  int timerc=0;
+
 
   char nome_char[8][14];
   strcpy(nome_char[0], "BATMAN");
@@ -378,7 +379,7 @@ void waiting_room() {
     al_set_audio_stream_playing(select_char, true);
   }
   else{
-  	al_set_audio_stream_playing(select_char, false);
+    al_set_audio_stream_playing(select_char, false);
   }
     al_set_audio_stream_playing(credito, false);
     al_set_audio_stream_playing(menu, false);
@@ -396,6 +397,13 @@ void waiting_room() {
       al_draw_bitmap(char_bckg, 0, 0, 0);
       al_draw_rectangle(40 + op * 73, 397, 97 + op * 73, 445, YELLOW, 5);
       al_draw_bitmap(arrow, 623, 397, 0);
+      if(msg == 1){
+        al_draw_text(mad_64, YELLOW, COMPRIMENTO / 2, 50, ALLEGRO_ALIGN_CENTER,"Personagem Indisponivel" );
+        timerc ++;
+        if(timerc>=60){
+          msg=0;
+        }
+      }
 
       if (op < 8)
         al_draw_text(mad_64, YELLOW, COMPRIMENTO / 2, 100, ALLEGRO_ALIGN_CENTER, 
@@ -438,34 +446,43 @@ void waiting_room() {
   }
 }
 
-
 //------------SALA DE ESPERA--------------//
 
 void lobby(int op) {
+
   int i, go = 0;
   DADOS pacote;
   int foi=1;
   int timerl=0;
+  al_draw_bitmap(wait_bckg, 0, 0, 0);
+  al_draw_text(mad_64, MAGENTA, COMPRIMENTO/2, ALTURA/2, ALLEGRO_ALIGN_CENTER, "Esperando mais jogadores");
+  al_flip_display;
 
   if(musica_de_fundo){
     al_attach_audio_stream_to_mixer(select_char, al_get_default_mixer());
     al_set_audio_stream_playing(select_char, true);
   }
   else{
-  	al_set_audio_stream_playing(select_char, false);
+    al_set_audio_stream_playing(select_char, false);
   }
     al_set_audio_stream_playing(credito, false);
     al_set_audio_stream_playing(menu, false);
-
-
+  for(i=0;i<10;i++){
+    int rec = recvMsgFromServer(&pacote,DONT_WAIT);
+    if(rec != NO_MESSAGE){
+      if(op==pacote.personagem){
+        char_select(1);
+      }
+    }
+  }
   while(foi){
     al_flip_display();
     al_draw_bitmap(wait_bckg, 0, 0, 0);
     al_draw_text(mad_64, MAGENTA, COMPRIMENTO/2, ALTURA/2, ALLEGRO_ALIGN_CENTER, "Esperando mais jogadores");
-    sendMsgToServer(&pacote,DONT_WAIT);
+    pacote.personagem=op;
+    sendMsgToServer(&pacote,sizeof(DADOS));
     int rec = recvMsgFromServer(&pacote, WAIT_FOR_IT);
     if(pacote.lastid<7)go = pacote.lastid;
-    printf("%d\n",pacote.lastid );
     if(go>=PLAYERSGO-1){     
       foi=0;
     }
@@ -483,7 +500,7 @@ void gameloading(int personagem){
     al_set_audio_stream_playing(select_char, true);
   }
   else{
-  	al_set_audio_stream_playing(select_char, false);
+    al_set_audio_stream_playing(select_char, false);
   }
     al_set_audio_stream_playing(credito, false);
     al_set_audio_stream_playing(menu, false);
@@ -588,7 +605,6 @@ void gameloading(int personagem){
           }
         }
       }
-      printf("%d %d\n",ready,ready_all );
       if(ready>=PLAYERSGO-1){
         pacote.allinic=1;
       }
@@ -630,7 +646,7 @@ int ableWalk(int x, int y) {
     al_set_audio_stream_playing(menu, true);
   }
   else{
-  	al_set_audio_stream_playing(menu, false);
+    al_set_audio_stream_playing(menu, false);
   }
     al_set_audio_stream_playing(credito, false);
     al_set_audio_stream_playing(select_char, false);
@@ -656,7 +672,7 @@ int ableWalk(int x, int y) {
   int receber;
   int characters;
   int x_adv, y_adv;
-  int vstatus=30;
+  int vstatus=10;
   int ult_tiro=0;
   int ini_tiro=0;
   int shoot=0, dirproj=0;
@@ -700,8 +716,8 @@ int ableWalk(int x, int y) {
       pacote.allinic=1;
 
       if(shoot==1){
-      	shoot=-1;
-      	dirproj = dir;
+        shoot=-1;
+        dirproj = dir;
       }
 
       pacote.projetdir = dirproj; // direção do projetil, 1=cima,2=baixo,3=esquerda,4=direita 
@@ -768,7 +784,8 @@ int ableWalk(int x, int y) {
           
           x_adv = conversor[characters].x;
           y_adv = conversor[characters].y;
-
+  
+          
           if (movtype) {
             if (movtype == 1 && x_adv - 6 <= x && x_adv + 6 >= x && y_adv + 6 >= y && y_adv - 6 <= y) {
               y -= _BITMOV;
@@ -824,7 +841,7 @@ int ableWalk(int x, int y) {
                 pacote.posicao = 7;
               }
             }
-            	else {
+              else {
               al_draw_bitmap_region(spr[personagem], _r2, 344, 224, 0);
               pacote.posicao = 8;
             }
@@ -846,15 +863,16 @@ int ableWalk(int x, int y) {
         }
       }
       
-
+      sample = al_load_sample("ext_files/sounds/run.ogg");
+      al_reserve_samples(1);
       timerjogo = (timerjogo+1)%12;
 
       al_draw_scaled_bitmap(corner, x, y, 360, 240, 0, 0, 720, 480, 0);
       for(i=0;i<vstatus;i++){
-        al_draw_bitmap(heart,8*i,0,0);
+        al_draw_bitmap(heart,10*i,0,0);
       }
       for(i=0;i<TIRO;i++){
-      	al_draw_filled_rectangle((2*tiros[i].x)-(2*x)+342, (2*tiros[i].y)-(2*y)+222, (2*tiros[i].x)-(2*x)+346, (2*tiros[i].y)-(2*y)+226, YELLOW);
+        al_draw_filled_rectangle((2*tiros[i].x)-(2*x)+342, (2*tiros[i].y)-(2*y)+222, (2*tiros[i].x)-(2*x)+346, (2*tiros[i].y)-(2*y)+226, YELLOW);
         if(tiros[i].x >= x && tiros[i].x <= x+16 && tiros[i].y >= y && tiros[i].y <= y+16){
           vstatus--;
         }
@@ -863,10 +881,10 @@ int ableWalk(int x, int y) {
       al_flip_display();
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-      if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) movtype = 1;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_UP) movtype = 4;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) movtype = 2;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) movtype = 3;
+      if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) movtype = 1, al_play_sample(sample, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+      else if (event.keyboard.keycode == ALLEGRO_KEY_UP) movtype = 4,al_play_sample(sample, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+      else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) movtype = 2, al_play_sample(sample, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+      else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) movtype = 3, al_play_sample(sample, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
       else if (event.keyboard.keycode == ALLEGRO_KEY_LSHIFT) shoot=1;
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP) {
@@ -880,11 +898,23 @@ int ableWalk(int x, int y) {
 
   return encerrar();
 }
-
 #define OP_AJ 3
   void ajustes() {
   int op = 2;
+
   while (1) {
+
+  	if(!musica_de_fundo){
+  		al_set_audio_stream_playing(select_char, false);
+  		al_set_audio_stream_playing(menu, false);
+  		al_set_audio_stream_playing(credito, false);
+  	}
+  	else{
+  		al_attach_audio_stream_to_mixer(menu, al_get_default_mixer());
+  		al_set_audio_stream_playing(menu, true);
+  	}
+
+
     ALLEGRO_EVENT event;
     al_wait_for_event(tick, &event);
 
@@ -929,7 +959,7 @@ void credits() {
 	  al_attach_audio_stream_to_mixer(credito, al_get_default_mixer());
 	  al_set_audio_stream_playing(credito, true);
 	}
-	 else{
+	else{
   	al_set_audio_stream_playing(credito, false);
   	}
 	al_set_audio_stream_playing(select_char, false);

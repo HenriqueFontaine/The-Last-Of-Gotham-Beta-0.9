@@ -130,15 +130,14 @@ void inicializacao_imagens() {
     run = 0;
   }
 
+  heart = al_load_bitmap("ext_files/imgs/heart.png");
+  if (heart == NULL) {
+    printf("Falha na inicializacao do icone do corazon! :(\n");
+    run = 0;
+  }
   arrow = al_load_bitmap("ext_files/imgs/arrow.png");
   if (arrow == NULL) {
     printf("Falha na inicializacao do icone da seta! :(\n");
-    run = 0;
-  }
-
-  heart = al_load_bitmap("ext_files/imgs/heart.png");
-  if(heart == NULL){
-    printf("Falha na inicializacao do icone do coracao! :(\n");
     run = 0;
   }
 }
