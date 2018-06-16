@@ -66,14 +66,14 @@ int main()
 
         serverun.timert[tirofinal]=0;
         tirofinal++;
-        if(tirofinal>=10){
+        if(tirofinal>=TIRO){
           tirofinal=0;
         }
     }
     
 timerreal++;
   if(timerreal>5){
-      for(loop=0;loop<10 ;loop++){
+      for(loop=0;loop<TIRO ;loop++){
       serverun.timert[loop]++;
 
       if(serverun.direct[loop]==4)      serverun.proy[loop]-=VEL_TIRO;

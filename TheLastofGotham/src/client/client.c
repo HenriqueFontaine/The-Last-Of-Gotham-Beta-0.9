@@ -123,7 +123,10 @@ void assertConnection(char IP[], char login[]) {
     } else {
       puts("Server didn't respond to connection!");
     }
-    waiting_room();
+    al_draw_text(mad_64, YELLOW, COMPRIMENTO / 2, 50, ALLEGRO_ALIGN_CENTER,"Connection Fail" );
+    al_flip_display();
+    al_rest(2.0);
+    menu_principal();
     int res;
     while (res = tolower(getchar()), res != 'n' && res != 'y' && res != '\n') {
       puts("anh???");
@@ -265,6 +268,8 @@ void waiting_room() {
   al_draw_bitmap(ip_bckg, 0, 0, 0);
   al_draw_text(mad_64, YELLOW, COMPRIMENTO/2, 150, ALLEGRO_ALIGN_CENTER, "ENTRE COM O IP:");
   al_flip_display();
+  int connectScreen=1;
+  int loginScreen=1;
 
   if(musica_de_fundo){
     al_attach_audio_stream_to_mixer(menu, al_get_default_mixer());
@@ -676,6 +681,7 @@ int ableWalk(int x, int y) {
   int ult_tiro=0;
   int ini_tiro=0;
   int shoot=0, dirproj=0;
+  int timerwin=0; 
     pacote.inicialtiro=0;
 
 
@@ -725,11 +731,15 @@ int ableWalk(int x, int y) {
 
       
       sendMsgToServer(&pacote, sizeof(DADOS));
+
       if(vstatus<=0){
-        return encerrar();
+        personagem=10;
+        pacote.personagem=personagem;
+        sendMsgToServer(&pacote,sizeof(DADOS));
+        return gameover();
       }
 
-      for (receber=0; receber<5; receber++) {
+      for (receber=0; receber<6; receber++) {
         pacote.x_env = 0;
         pacote.y_env = 0;
         pacote.posicao = 0;
@@ -738,17 +748,28 @@ int ableWalk(int x, int y) {
         for (conversortiros=0; conversortiros<TIRO; conversortiros++) {
           tiros[conversortiros].x=pacote.prox[conversortiros];
           tiros[conversortiros].y=pacote.proy[conversortiros];
+          
         }
-
+        printf("%d\n",pacote.personagem);
+          if(pacote.personagem!= personagem){
+            timerwin++;
+          }else{
+            timerwin=0;
+          }
         ult_tiro=pacote.finaltiro;
         ini_tiro=pacote.inicialtiro;
          if (rec != NO_MESSAGE) {
+
           if (pacote.personagem<9 && pacote.personagem>=0) {
             conversor[pacote.personagem].x = pacote.x_env;
             conversor[pacote.personagem].y = pacote.y_env;
             conversor[pacote.personagem].posicao = pacote.posicao;
           }
         }
+      }
+
+      if(timerwin>=1222220){
+      	win();
       }
 
       int localizar[8];
@@ -991,6 +1012,23 @@ void credits() {
     }
   }
 }
+
+void gameover(){
+	al_draw_bitmap(over_bckg, 0, 0, 0);
+	al_flip_display();
+	al_rest(6.0);
+	return menu_principal();
+}
+
+void win(){
+	al_draw_bitmap(winner, 0, 0, 0);
+	al_draw_text(mad_30, WHITE, COMPRIMENTO/2, 360, ALLEGRO_ALIGN_CENTER, "PARABENS! VOCE VENCEU!");
+	al_flip_display();
+	al_rest(6.0);
+	return encerrar();
+
+}
+
 
 void encerrar() {
   al_clear_to_color(BLACK);

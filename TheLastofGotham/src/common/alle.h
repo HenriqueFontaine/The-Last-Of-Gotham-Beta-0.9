@@ -17,7 +17,7 @@
 #define ALTURA 480
 #define FPS 30
 #define TIRO 10
-#define PLAYERSGO 3
+#define PLAYERSGO 2
 
 // CORES
 #define BLACK al_map_rgb(0, 0, 0)
@@ -55,6 +55,8 @@ ALLEGRO_BITMAP* credits_bckg;
 ALLEGRO_BITMAP* adjusts_bckg;
 ALLEGRO_BITMAP* ip_bckg;
 ALLEGRO_BITMAP* wait_bckg;
+ALLEGRO_BITMAP* over_bckg;
+ALLEGRO_BITMAP* winner;
 // SPRITES
 ALLEGRO_BITMAP* spr[8];
 // ICONS

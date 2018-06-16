@@ -130,6 +130,18 @@ void inicializacao_imagens() {
     run = 0;
   }
 
+  over_bckg = al_load_bitmap("ext_files/imgs/gameover.png");
+  if(over_bckg == NULL){
+    printf("Falha na inicializacao da imagem de Background do Game Over! :(\n");
+    run = 0;
+  }
+
+  winner = al_load_bitmap("ext_files/imgs/waitbckg.jpg");
+  if(winner == NULL){
+    printf("Falha na inicializacao da imagem de Background do Vencedor! :(\n");
+    run = 0;
+  }
+
   heart = al_load_bitmap("ext_files/imgs/heart.png");
   if (heart == NULL) {
     printf("Falha na inicializacao do icone do corazon! :(\n");
